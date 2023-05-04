@@ -1,25 +1,22 @@
-import User from '../models/user.js';
-
-const users = {
-  myNane: 'Rinat',
-};
+import User from "../models/user.js";
 
 export const getUsers = (req, res) => {
   User.find({})
-    .then((user) => res.send(user))
+    .then((users) => res.send(users))
     .catch((err) => res.status(500).send({ message: err.message }));
 };
 
 export const getUserId = (req, res) => {
   const { id } = req.params;
 
-  const user = users.find((item) => item._id === id);
+  User.findById(id).then((user) => {
+    if (!user) {
+      res.status(404).send({ message: "Пользователь не найден" });
+      return;
+    }
 
-  if (!user) {
-    return res.status(404).send({ message: 'Пользователь не найден' });
-  }
-
-  res.send(user);
+    res.send(user);
+  });
 };
 
 export const createUser = (req, res) => {
