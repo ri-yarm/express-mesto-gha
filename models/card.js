@@ -9,12 +9,12 @@ const cardSchema = new mongoose.Schema({
   },
   link: {
     type: String,
-    require: true,
+    required: true,
   },
   owner: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'owner',
-    require: true,
+    ref: 'user',
+    required: true,
   },
   likes: {
     type: [mongoose.Schema.Types.ObjectId],
@@ -24,6 +24,6 @@ const cardSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-});
+}, { versionKey: false });
 
 export default mongoose.model('card', cardSchema);
