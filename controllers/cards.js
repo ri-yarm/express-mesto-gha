@@ -11,7 +11,6 @@ import {
 
 export const getCards = (req, res) => {
   Card.find({})
-    .orFail()
     .then((card) => res.status(DEFAULT_SUCCESS_STATUS).send(card))
     .catch(() => res.status(DEFAULT_ERROR).send({ message: DEFAULT_ERROR_MESSAGE }));
 };
