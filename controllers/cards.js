@@ -6,13 +6,14 @@ import {
   DEFAULT_SUCCESS_STATUS,
   INCORRECT_DATA_ERROR,
   NOT_FOUND_ERROR,
+  DEFAULT_ERROR_MESSAGE,
 } from '../utils/constant.js';
 
 export const getCards = (req, res) => {
   Card.find({})
     .orFail()
     .then((card) => res.status(DEFAULT_SUCCESS_STATUS).send(card))
-    .catch((err) => res.status(DEFAULT_ERROR).send({ message: err.message }));
+    .catch(() => res.status(DEFAULT_ERROR).send({ message: DEFAULT_ERROR_MESSAGE }));
 };
 
 export const deleteCardId = (req, res) => {
@@ -20,7 +21,7 @@ export const deleteCardId = (req, res) => {
 
   Card.findByIdAndRemove(id)
     .orFail()
-    .then((card) => res.status(CREATE_SUCCESS_STATUS).send(card))
+    .then((card) => res.status(DEFAULT_SUCCESS_STATUS).send(card))
     .catch((err) => {
       if (err instanceof mongoose.Error.DocumentNotFoundError) {
         return res
@@ -32,9 +33,7 @@ export const deleteCardId = (req, res) => {
           .status(INCORRECT_DATA_ERROR)
           .send({ message: 'Не валидные данные для поиска' });
       }
-      return res
-        .status(500)
-        .send({ message: 'Не удалось произвети поиск карточки' });
+      return res.status(DEFAULT_ERROR).send({ message: DEFAULT_ERROR_MESSAGE });
     });
 };
 
@@ -49,7 +48,7 @@ export const createCard = (req, res) => {
           message: 'Переданы некорректные данные при создании карточки.',
         });
       }
-      return res.status(DEFAULT_ERROR).send({ message: err.message });
+      return res.status(DEFAULT_ERROR).send({ message: DEFAULT_ERROR_MESSAGE });
     });
 };
 
@@ -62,17 +61,17 @@ export const likeCard = (req, res) => {
     .orFail()
     .then((like) => res.status(DEFAULT_SUCCESS_STATUS).send(like))
     .catch((err) => {
-      if (err instanceof mongoose.Error.CastError) {
-        return res.status(INCORRECT_DATA_ERROR).send({
-          message: 'Переданы некорректные данные для постановки лайка.',
-        });
-      }
       if (err instanceof mongoose.Error.DocumentNotFoundError) {
         return res
           .status(NOT_FOUND_ERROR)
           .send({ message: 'Передан несуществующий _id карточки.' });
       }
-      return res.status(DEFAULT_ERROR).send({ message: err.message });
+      if (err instanceof mongoose.Error.CastError) {
+        return res.status(INCORRECT_DATA_ERROR).send({
+          message: 'Переданы некорректные данные для постановки лайка.',
+        });
+      }
+      return res.status(DEFAULT_ERROR).send({ message: DEFAULT_ERROR_MESSAGE });
     });
 };
 
@@ -82,18 +81,19 @@ export const dislikeCard = (req, res) => {
     { $pull: { likes: req.user._id } }, // убрать _id из массива
     { new: true },
   )
+    .orFail()
     .then((dislike) => res.status(DEFAULT_SUCCESS_STATUS).send(dislike))
     .catch((err) => {
-      if (err instanceof mongoose.Error.CastError) {
-        return res
-          .status(INCORRECT_DATA_ERROR)
-          .send({ message: 'Переданы некорректные данные для снятии лайка.' });
-      }
       if (err instanceof mongoose.Error.DocumentNotFoundError) {
         return res
           .status(NOT_FOUND_ERROR)
           .send({ message: 'Передан несуществующий _id карточки.' });
       }
-      return res.status(DEFAULT_ERROR).send({ message: err.message });
+      if (err instanceof mongoose.Error.CastError) {
+        return res
+          .status(INCORRECT_DATA_ERROR)
+          .send({ message: 'Переданы некорректные данные для снятии лайка.' });
+      }
+      return res.status(DEFAULT_ERROR).send({ message: DEFAULT_ERROR_MESSAGE });
     });
 };

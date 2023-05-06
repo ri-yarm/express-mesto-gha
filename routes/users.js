@@ -11,7 +11,7 @@ import {
 const userRouter = express.Router();
 
 userRouter.get('/users', getUsers);
-userRouter.get('/user/:id', getUserId);
+userRouter.get('/users/:id', getUserId);
 userRouter.post('/users', createUser);
 
 userRouter.patch('/users/me', updateProfile);

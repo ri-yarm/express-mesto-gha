@@ -6,9 +6,10 @@ import mongoose from 'mongoose';
 import { rateLimit } from 'express-rate-limit';
 /** Используем библиотеку helmet для защиты от кибератак */
 import helmet from 'helmet';
+import config from './config.js';
 import router from './routes/index.js';
 
-const { PORT = 3000 } = process.env;
+const { port } = config;
 
 const app = express();
 
@@ -20,7 +21,7 @@ const limiter = rateLimit({
   legacyHeaders: false, // Отключает референсный заголовок ответа библиотеки
 });
 
-mongoose.connect('mongodb://127.0.0.1:27017/mestodb', {});
+mongoose.connect('mongodb://localhost:27017/mestodb', {});
 
 app.use(limiter);
 
@@ -39,6 +40,6 @@ app.use(express.json());
 
 app.use('/', router);
 
-app.listen(PORT, () => {
-  console.log(`Добро пожаловать в интернет, ты на порту ${PORT} `);
+app.listen(port, () => {
+  console.log(`Добро пожаловать в интернет, ты на порту ${port} `);
 });
