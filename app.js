@@ -2,12 +2,19 @@ import express from 'express';
 /** импорт консоли для его корректной работы  */
 import console from 'console';
 import mongoose from 'mongoose';
-import bodyParser from 'body-parser';
 /** Используем библиотеку express-rate-limit для защиты от DDoS атак */
 import { rateLimit } from 'express-rate-limit';
 /** Используем библиотеку helmet для защиты от кибератак */
 import helmet from 'helmet';
 import router from './routes/index.js';
+
+/*
+  ! У меня в автотесте, такая ошибка:
+  "Error: Cannot find module '/home/runner/work/express-mesto-gha/express-mesto-gha/run'"
+  Process completed with exit code 1.
+
+  , не может найти какойто непонятный модуль RUN.
+*/
 
 const { PORT = 3000 } = process.env;
 
@@ -36,7 +43,7 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(bodyParser.json());
+app.use(express.json());
 
 app.use('/', router);
 
