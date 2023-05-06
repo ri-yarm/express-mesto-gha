@@ -1,5 +1,16 @@
 [![Tests](../../actions/workflows/tests-13-sprint.yml/badge.svg)](../../actions/workflows/tests-13-sprint.yml) [![Tests](../../actions/workflows/tests-14-sprint.yml/badge.svg)](../../actions/workflows/tests-14-sprint.yml)
 # Проект Mesto фронтенд + бэкенд
+[Ссылка на репозиторий](https://github.com/ri-yarm/express-mesto-gha)
+
+# Стек
+  * NodeJs
+    * midlewares
+  * Express
+    * Helmet
+    * Express-rate-limit
+  * Mongoose
+    * Schema
+    * validator
 
 
 ## Директории

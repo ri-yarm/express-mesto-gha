@@ -1,6 +1,12 @@
 import express from 'express';
 
-import { getCards, createCard, deleteCardId, likeCard, dislikeCard } from '../controllers/cards.js';
+import {
+  getCards,
+  createCard,
+  deleteCardId,
+  likeCard,
+  dislikeCard,
+} from '../controllers/cards.js';
 
 const cardsRouter = express.Router();
 
