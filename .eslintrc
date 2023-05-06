@@ -1,6 +1,12 @@
 {
   "extends": "airbnb-base",
   "rules": {
-    "no-underscore-dangle": ["error", { "allow": ["_id"] }]
+    "no-underscore-dangle": ["error", { "allow": ["_id"] }], //что бы ошибки с "_id" не подсвечивал
+    "import/extensions": [
+      "off",
+      {
+        ".js": "never"
+      }
+    ] //что бы ошибки с импортом ".js" не подсвечивал(у меня без добавления формата ломается всё)
   }
 }

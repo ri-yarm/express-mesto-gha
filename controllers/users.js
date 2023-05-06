@@ -1,45 +1,110 @@
-import User from "../models/user.js";
+import mongoose from 'mongoose';
+import User from '../models/user.js';
+import {
+  DEFAULT_ERROR,
+  CREATE_SUCCESS_STATUS,
+  DEFAULT_SUCCESS_STATUS,
+  INCORRECT_DATA_ERROR,
+  NOT_FOUND_ERROR,
+} from '../utils/constant.js';
 
 export const getUsers = (req, res) => {
   User.find({})
-    .then((users) => res.status(200).send(users))
-    .catch((err) => res.status(500).send({ message: err.message }));
+    .orFail()
+    .then((users) => res.status(DEFAULT_SUCCESS_STATUS).send(users))
+    .catch((err) => res.status(DEFAULT_ERROR).send({ message: err.message }));
 };
 
 export const getUserId = (req, res) => {
   const { id } = req.params;
 
   User.findById(id)
-    .then((user) => res.status(200).send(user))
+    .orFail()
+    .then((user) => res.status(DEFAULT_SUCCESS_STATUS).send(user))
     .catch((err) => {
-      if (err.name === 'DocumenNotFoundError') {
-        res.status(404).send({ message: "Пользователь не найден" });
-        return;
+      if (err instanceof mongoose.Error.DocumentNotFoundError) {
+        return res
+          .status(NOT_FOUND_ERROR)
+          .send({ message: 'Пользователь по указанному _id не найден.' });
       }
-
-    })
+      if (err instanceof mongoose.Error.CastError) {
+        return res
+          .status(INCORRECT_DATA_ERROR)
+          .send({ message: 'Не валидные данные для поиска' });
+      }
+      return res
+        .status(DEFAULT_ERROR)
+        .send({ message: 'Не удалось произвети поиск пользователя' });
+    });
 };
 
 export const createUser = (req, res) => {
   const { name, about, avatar } = req.body;
 
-  console.log(req.body);
-
   User.create({ name, about, avatar })
-    .then((user) => res.status(201).send(user))
-    .catch((err) => res.status(500).send({ message: err.message }));
+    .then((user) => res.status(CREATE_SUCCESS_STATUS).send(user))
+    .catch((err) => {
+      if (err instanceof mongoose.Error.ValidationError) {
+        return res.status(INCORRECT_DATA_ERROR).send({
+          message: 'Не введены данные для регистрации пользователя',
+        });
+      }
+      return res.status(DEFAULT_ERROR).send({ message: err.message });
+    });
 };
 
 export const updateProfile = (req, res) => {
-  const { name, about} = req.body;
+  const { name, about } = req.body;
 
   User.findByIdAndUpdate(req.user._id, { name, about })
-    .then((user) => res.status(201).send(user));
+    .orFail()
+    .then((user) => res.status(DEFAULT_SUCCESS_STATUS).send(user))
+    .catch((err) => {
+      if (err instanceof mongoose.Error.DocumentNotFoundError) {
+        return res
+          .status(NOT_FOUND_ERROR)
+          .send({ message: 'Пользователь с указанным _id не найден.' });
+      }
+      if (err instanceof mongoose.Error.CastError) {
+        return res
+          .status(INCORRECT_DATA_ERROR)
+          .send({
+            message: 'Переданы некорректные данные при обновлении профиля.',
+          });
+      }
+      if (err instanceof mongoose.Error.ValidationError) {
+        return res.status(INCORRECT_DATA_ERROR).send({
+          message: 'Не введены данные для обновления информации о пользователе',
+        });
+      }
+      return res.status(DEFAULT_ERROR).send({ message: err.message });
+    });
 };
 
 export const updateAvatar = (req, res) => {
   const { avatar } = req.body;
 
   User.findByIdAndUpdate(req.user._id, { avatar })
-    .then((user) => res.status(201).send(user));
+    .orFail()
+    .then((user) => res.status(DEFAULT_SUCCESS_STATUS).send(user))
+    .catch((err) => {
+      if (err instanceof mongoose.Error.DocumentNotFoundError) {
+        return res
+          .status(NOT_FOUND_ERROR)
+          .send({ message: 'Пользователь с указанным _id не найден.' });
+      }
+      if (err instanceof mongoose.Error.CastError) {
+        return res
+          .status(INCORRECT_DATA_ERROR)
+          .send({
+            message: 'Переданы некорректные данные при обновлении аватара.',
+          });
+      }
+      if (err instanceof mongoose.Error.ValidationError) {
+        return res.status(INCORRECT_DATA_ERROR).send({
+          message: 'Не введены данные для обновления аватара пользователя',
+        });
+      }
+      return res.status(DEFAULT_ERROR).send({ message: err.message });
+    });
 };
