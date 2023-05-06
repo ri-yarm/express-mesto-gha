@@ -8,14 +8,6 @@ import { rateLimit } from 'express-rate-limit';
 import helmet from 'helmet';
 import router from './routes/index.js';
 
-/*
-  ! У меня в автотесте, такая ошибка:
-  "Error: Cannot find module '/home/runner/work/express-mesto-gha/express-mesto-gha/run'"
-  Process completed with exit code 1.
-
-  , не может найти какойто непонятный модуль RUN.
-*/
-
 const { PORT = 3000 } = process.env;
 
 const app = express();
