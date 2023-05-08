@@ -21,7 +21,8 @@ const limiter = rateLimit({
   legacyHeaders: false, // Отключает референсный заголовок ответа библиотеки
 });
 
-mongoose.connect('mongodb://localhost:27017/mestodb', {});
+// хардкод mongoURI, не проходи автотесты
+mongoose.connect('mongodb://127.0.0.1:27017/mestodb', {});
 
 app.use(limiter);
 
