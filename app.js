@@ -12,7 +12,7 @@ import router from './routes/index.js';
 
 dotenv.config();
 
-const { PORT = 3000, MONGODB_URI = 'mongodb://127.0.0.1:27017/mestod' } = process.env;
+const { PORT = 3000, MONGODB_URI = 'mongodb://127.0.0.1:27017/mestodb' } = process.env;
 
 const app = express();
 

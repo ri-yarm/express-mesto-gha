@@ -1,32 +1,69 @@
+/* eslint-disable func-names */
 import mongoose from 'mongoose';
 import validator from 'validator';
+import bcrypt from 'bcryptjs';
 
 /** Схема пользователя. в массиве, второе значение для ответа пользователю */
 const userSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: [true, 'Поле обязательна к заполнению'],
       minlength: [2, 'Минимальная длина поля - 2'],
       maxlength: [30, 'Максимальная длина поля - 2'],
+      default: 'Жак-Ив Кусто',
     },
     about: {
       type: String,
-      required: [true, 'Поле обязательна к заполнению'],
       minlength: [2, 'Минимальная длина поля - 2'],
       maxlength: [30, 'Максимальная длина поля - 2'],
+      default: 'Исследователь',
     },
     avatar: {
       type: String,
-      required: [true, 'Поле обязательна к заполнению'],
       validate: {
         validator: (v) => {
           validator.isURL(v);
         },
       },
+      default:
+        'https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png',
+    },
+    email: {
+      type: String,
+      required: [true, 'Поле обязательно к заполнению'],
+      unique: [true, 'Такой емейл уже зарегистрирован'],
+    },
+    password: {
+      type: String,
+      required: [true, 'Поле обязательно к заполнению'],
+      minlength: [6, 'Минимальная длина пароля - 6'],
+      validate: {
+        validator: (v) => {
+          validator.isEmail(v);
+        },
+      },
     },
   },
-  { versionKey: false },
+  {
+    versionKey: false,
+    statics: {
+      findUserByCredentials(email, password) {
+        return this.findOne({ email }).then((user) => {
+          if (!user) {
+            return Promise.reject(new Error('Неправильные почта или пароль'));
+          }
+
+          return bcrypt.compare(password, user.password).then((mathed) => {
+            if (!mathed) {
+              return Promise.reject(new Error('Неправильные почта или пароль'));
+            }
+
+            return user;
+          });
+        });
+      },
+    },
+  },
 );
 
 export default mongoose.model('user', userSchema);

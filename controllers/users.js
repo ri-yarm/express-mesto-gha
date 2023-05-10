@@ -1,4 +1,6 @@
 import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 import User from '../models/user.js';
 import {
   DEFAULT_ERROR,
@@ -7,13 +9,18 @@ import {
   INCORRECT_DATA_ERROR,
   NOT_FOUND_ERROR,
   DEFAULT_ERROR_MESSAGE,
+  UNAUTHORIZED,
 } from '../utils/constant.js';
+
+const SALT = 10;
 
 export const getUsers = (req, res) => {
   User.find({})
     .orFail()
     .then((users) => res.status(DEFAULT_SUCCESS_STATUS).send(users))
-    .catch(() => res.status(DEFAULT_ERROR).send({ message: DEFAULT_ERROR_MESSAGE }));
+    .catch(() => {
+      res.status(DEFAULT_ERROR).send({ message: DEFAULT_ERROR_MESSAGE });
+    });
 };
 
 export const getUserId = (req, res) => {
@@ -33,31 +40,43 @@ export const getUserId = (req, res) => {
           .status(INCORRECT_DATA_ERROR)
           .send({ message: 'Не валидные данные для поиска' });
       }
-      return res
-        .status(DEFAULT_ERROR)
-        .send({ message: DEFAULT_ERROR_MESSAGE });
+      return res.status(DEFAULT_ERROR).send({ message: DEFAULT_ERROR_MESSAGE });
     });
 };
 
 export const createUser = (req, res) => {
-  const { name, about, avatar } = req.body;
+  const { name, about, avatar, email, password } = req.body;
 
-  User.create({ name, about, avatar })
-    .then((user) => res.status(CREATE_SUCCESS_STATUS).send(user))
-    .catch((err) => {
-      if (err instanceof mongoose.Error.ValidationError) {
-        return res.status(INCORRECT_DATA_ERROR).send({
-          message: 'Не введены данные для регистрации пользователя',
-        });
-      }
-      return res.status(DEFAULT_ERROR).send({ message: DEFAULT_ERROR_MESSAGE });
-    });
+  bcrypt.hash(password, SALT).then((hash) => {
+    User.create({
+      name,
+      about,
+      avatar,
+      email,
+      password: hash,
+    })
+      .then((user) => res.status(CREATE_SUCCESS_STATUS).send(user))
+      .catch((err) => {
+        if (err instanceof mongoose.Error.ValidationError) {
+          return res.status(INCORRECT_DATA_ERROR).send({
+            message: 'Не введены данные для регистрации пользователя',
+          });
+        }
+        return res
+          .status(DEFAULT_ERROR)
+          .send({ message: DEFAULT_ERROR_MESSAGE });
+      });
+  });
 };
 
 export const updateProfile = (req, res) => {
   const { name, about } = req.body;
 
-  User.findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
+  User.findByIdAndUpdate(
+    req.user._id,
+    { name, about },
+    { new: true, runValidators: true },
+  )
     .orFail()
     .then((user) => res.status(DEFAULT_SUCCESS_STATUS).send(user))
     .catch((err) => {
@@ -78,7 +97,11 @@ export const updateProfile = (req, res) => {
 export const updateAvatar = (req, res) => {
   const { avatar } = req.body;
 
-  User.findByIdAndUpdate(req.user._id, { avatar }, { new: true, runValidators: true })
+  User.findByIdAndUpdate(
+    req.user._id,
+    { avatar },
+    { new: true, runValidators: true },
+  )
     .orFail()
     .then((user) => res.status(DEFAULT_SUCCESS_STATUS).send(user))
     .catch((err) => {
@@ -88,11 +111,9 @@ export const updateAvatar = (req, res) => {
           .send({ message: 'Пользователь с указанным _id не найден.' });
       }
       if (err instanceof mongoose.Error.CastError) {
-        return res
-          .status(INCORRECT_DATA_ERROR)
-          .send({
-            message: 'Переданы некорректные данные при обновлении аватара.',
-          });
+        return res.status(INCORRECT_DATA_ERROR).send({
+          message: 'Переданы некорректные данные при обновлении аватара.',
+        });
       }
       if (err instanceof mongoose.Error.ValidationError) {
         return res.status(INCORRECT_DATA_ERROR).send({
@@ -100,5 +121,26 @@ export const updateAvatar = (req, res) => {
         });
       }
       return res.status(DEFAULT_ERROR).send({ message: DEFAULT_ERROR_MESSAGE });
+    });
+};
+
+export const login = (req, res) => {
+  const { email, password } = req.body;
+
+  User.findUserByCredentials(email, password)
+    .then((user) => {
+      const token = jwt.sign({ _id: user.id }, 'secret-key', {
+        expiresIn: '7d',
+      });
+
+      res.status(DEFAULT_SUCCESS_STATUS).send(token);
+    })
+    .catch((err) => {
+      if (err instanceof mongoose.Error.DocumentNotFoundError) {
+        return res
+          .status(NOT_FOUND_ERROR)
+          .send({ message: 'Пользователь с указанным email не найден.' });
+      }
+      return res.status(UNAUTHORIZED).send({ message: err.message });
     });
 };

@@ -8,6 +8,7 @@
         ".js": "never"
       }
     ], //что бы ошибки с импортом ".js" не подсвечивал(у меня без добавления формата ломается всё)
-    "linebreak-style": ["off", "windows"]
+    "linebreak-style": ["off", "windows"],
+    "import/no-extraneous-dependencies": ["error", {"devDependencies": false, "optionalDependencies": false, "peerDependencies": false}]
   }
 }

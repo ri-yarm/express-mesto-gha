@@ -1,4 +1,5 @@
 import express from 'express';
+import auth from '../middlewares/auth.js';
 
 import {
   getUsers,
@@ -6,13 +7,18 @@ import {
   createUser,
   updateProfile,
   updateAvatar,
+  login,
 } from '../controllers/users.js';
 
 const userRouter = express.Router();
 
+userRouter.post('/signup', createUser);
+userRouter.post('/signin', login);
+
+userRouter.use(auth);
+
 userRouter.get('/users', getUsers);
 userRouter.get('/users/:id', getUserId);
-userRouter.post('/users', createUser);
 
 userRouter.patch('/users/me', updateProfile);
 userRouter.patch('/users/me/avatar', updateAvatar);
