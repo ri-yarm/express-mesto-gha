@@ -78,7 +78,10 @@ export const createUser = (req, res) => {
       email,
       password: hash,
     })
-      .then((user) => res.status(CREATE_SUCCESS_STATUS).send(user))
+      .then((user) => res.status(CREATE_SUCCESS_STATUS).send({
+        email: user.email,
+        _id: user._id
+      }))
       .catch((err) => {
         if (err instanceof mongoose.Error.ValidationError) {
           return res.status(INCORRECT_DATA_ERROR).send({
