@@ -1,3 +1,6 @@
+import console from 'console';
+
+
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
@@ -16,7 +19,6 @@ const SALT = 10;
 
 export const getUsers = (req, res) => {
   User.find({})
-    .orFail()
     .then((users) => res.status(DEFAULT_SUCCESS_STATUS).send(users))
     .catch(() => {
       res.status(DEFAULT_ERROR).send({ message: DEFAULT_ERROR_MESSAGE });
@@ -44,6 +46,27 @@ export const getUserId = (req, res) => {
     });
 };
 
+export const getUserMe = (req, res) => {
+  const { _id } = req.user;
+
+  User.findById(_id)
+    .orFail()
+    .then((user) => res.status(DEFAULT_SUCCESS_STATUS).send(user))
+    .catch((err) => {
+      if (err instanceof mongoose.Error.DocumentNotFoundError) {
+        return res
+          .status(NOT_FOUND_ERROR)
+          .send({ message: 'Пользователь по указанному _id не найден.' });
+      }
+      if (err instanceof mongoose.Error.CastError) {
+        return res
+          .status(INCORRECT_DATA_ERROR)
+          .send({ message: 'Не валидные данные для поиска fgdssdfds' });
+      }
+      return res.status(DEFAULT_ERROR).send({ message: DEFAULT_ERROR_MESSAGE });
+    });
+};
+
 export const createUser = (req, res) => {
   const { name, about, avatar, email, password } = req.body;
 
@@ -59,7 +82,7 @@ export const createUser = (req, res) => {
       .catch((err) => {
         if (err instanceof mongoose.Error.ValidationError) {
           return res.status(INCORRECT_DATA_ERROR).send({
-            message: 'Не введены данные для регистрации пользователя',
+            message: err.message,
           });
         }
         return res

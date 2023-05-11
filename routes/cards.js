@@ -1,4 +1,5 @@
 import express from 'express';
+import auth from '../middlewares/auth.js';
 
 import {
   getCards,
@@ -9,6 +10,8 @@ import {
 } from '../controllers/cards.js';
 
 const cardsRouter = express.Router();
+
+cardsRouter.use(auth);
 
 cardsRouter.get('/cards', getCards);
 cardsRouter.post('/cards', createCard);

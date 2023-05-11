@@ -8,7 +8,9 @@ import {
   updateProfile,
   updateAvatar,
   login,
+  getUserMe,
 } from '../controllers/users.js';
+// import user from '../models/user.js';
 
 const userRouter = express.Router();
 
@@ -18,6 +20,7 @@ userRouter.post('/signin', login);
 userRouter.use(auth);
 
 userRouter.get('/users', getUsers);
+userRouter.get('/users/me', getUserMe);
 userRouter.get('/users/:id', getUserId);
 
 userRouter.patch('/users/me', updateProfile);

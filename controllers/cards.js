@@ -1,3 +1,5 @@
+import console from 'console';
+
 import mongoose from 'mongoose';
 import Card from '../models/card.js';
 import {
@@ -12,14 +14,26 @@ import {
 export const getCards = (req, res) => {
   Card.find({})
     .then((card) => res.status(DEFAULT_SUCCESS_STATUS).send(card))
-    .catch(() => res.status(DEFAULT_ERROR).send({ message: DEFAULT_ERROR_MESSAGE }));
+    .catch(() =>
+      res.status(DEFAULT_ERROR).send({ message: DEFAULT_ERROR_MESSAGE }),
+    );
 };
 
 export const deleteCardId = (req, res) => {
   const { id } = req.params;
 
-  Card.findByIdAndRemove(id)
+  Card.findById(id)
     .orFail()
+    .then((card) => {
+      if (toString(card.owner) !== req.user._id) {
+        console.log('Кого ты собираешься наебать чучело');
+        return Promise.reject(new Error('Удалять можно только свои карточки.'));
+      }
+      return card;
+    })
+    .then((card) => {
+      Card.deleteOne(card);
+    })
     .then((card) => res.status(DEFAULT_SUCCESS_STATUS).send(card))
     .catch((err) => {
       if (err instanceof mongoose.Error.DocumentNotFoundError) {

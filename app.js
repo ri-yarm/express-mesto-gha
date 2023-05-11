@@ -30,15 +30,6 @@ app.use(limiter);
 
 app.use(helmet());
 
-/** Хардкод пользователя */
-app.use((req, res, next) => {
-  req.user = {
-    _id: '645543dc1b2c4016665d85b7',
-  };
-
-  next();
-});
-
 app.use(express.json());
 
 app.use('/', router);
