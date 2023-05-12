@@ -9,9 +9,11 @@ import { rateLimit } from 'express-rate-limit';
 import helmet from 'helmet';
 // import config from './config.js';
 import router from './routes/index.js';
+import centralErrors from './middlewares/centralErrors.js';
 
 dotenv.config();
 
+// .env удалил, пока пусть по дефолту работает
 const { PORT = 3000, MONGODB_URI = 'mongodb://127.0.0.1:27017/mestodb' } = process.env;
 
 const app = express();
@@ -26,13 +28,19 @@ const limiter = rateLimit({
 
 mongoose.connect(MONGODB_URI, {});
 
+/* подключаем лимитер */
 app.use(limiter);
 
+/* врубаем хелмет */
 app.use(helmet());
 
+/* парсер */
 app.use(express.json());
 
 app.use('/', router);
+
+/* Централлизованная обработка ошибок */
+app.use(centralErrors);
 
 app.listen(PORT, () => {
   console.log(`Добро пожаловать в интернет, ты на порту ${PORT} `);

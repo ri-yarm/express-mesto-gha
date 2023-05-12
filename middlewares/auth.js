@@ -1,24 +1,22 @@
 /* eslint-disable func-names */
 import jwt from 'jsonwebtoken';
-
-import {
-  UNAUTHORIZED,
-} from '../utils/constant.js';
+import UnAuthorizedError from '../utils/instanceOfErrors/unAuthorizedError.js';
+import { SECRET_KEY } from '../utils/constant.js';
 
 export default function (req, res, next) {
   const { authorization } = req.headers;
 
   if (!authorization || !authorization.startsWith('Bearer ')) {
-    return res.status(UNAUTHORIZED).send({ message: 'Необходима авторизация' });
+    return next(new UnAuthorizedError('Необходима авторизация.'));
   }
 
   const token = authorization.replace('Bearer ', '');
   let payload;
 
   try {
-    payload = jwt.verify(token, 'secret-key');
+    payload = jwt.verify(token, SECRET_KEY);
   } catch (err) {
-    return res.status(UNAUTHORIZED).send({ message: 'Необходима авторизация' });
+    return next(new UnAuthorizedError('Необходима авторизация.'));
   }
 
   req.user = payload;

@@ -1,32 +1,26 @@
-import console from 'console';
-
 import mongoose from 'mongoose';
 import Card from '../models/card.js';
-import {
+/* import {
   DEFAULT_ERROR,
   CREATE_SUCCESS_STATUS,
   DEFAULT_SUCCESS_STATUS,
-  INCORRECT_DATA_ERROR,
-  NOT_FOUND_ERROR,
-  DEFAULT_ERROR_MESSAGE,
-} from '../utils/constant.js';
+} from '../utils/constant.js'; */
+import BadReqestError from '../utils/instanceOfErrors/badRequestError.js';
+import NotFoundError from '../utils/instanceOfErrors/notFoundError.js';
 
-export const getCards = (req, res) => {
+export const getCards = (req, res, next) => {
   Card.find({})
-    .then((card) => res.status(DEFAULT_SUCCESS_STATUS).send(card))
-    .catch(() =>
-      res.status(DEFAULT_ERROR).send({ message: DEFAULT_ERROR_MESSAGE }),
-    );
+    .then((card) => res/* .status(DEFAULT_SUCCESS_STATUS) */.send(card))
+    .catch(next);
 };
 
-export const deleteCardId = (req, res) => {
+export const deleteCardId = (req, res, next) => {
   const { id } = req.params;
 
   Card.findById(id)
     .orFail()
     .then((card) => {
       if (toString(card.owner) !== req.user._id) {
-        console.log('Кого ты собираешься наебать чучело');
         return Promise.reject(new Error('Удалять можно только свои карточки.'));
       }
       return card;
@@ -34,79 +28,75 @@ export const deleteCardId = (req, res) => {
     .then((card) => {
       Card.deleteOne(card);
     })
-    .then((card) => res.status(DEFAULT_SUCCESS_STATUS).send(card))
+    .then((card) => res/* .status(DEFAULT_SUCCESS_STATUS) */.send(card))
     .catch((err) => {
       if (err instanceof mongoose.Error.DocumentNotFoundError) {
-        return res
-          .status(NOT_FOUND_ERROR)
-          .send({ message: 'Карточка с указанным _id не найдена.' });
+        return next(new NotFoundError('Карточка с указанным id не найдена.'));
       }
       if (err instanceof mongoose.Error.CastError) {
-        return res
-          .status(INCORRECT_DATA_ERROR)
-          .send({ message: 'Не валидные данные для поиска' });
+        return next(new BadReqestError('Не валидные данные для поиска.'));
       }
-      return res.status(DEFAULT_ERROR).send({ message: DEFAULT_ERROR_MESSAGE });
+      /* if (
+        err instanceof Error &&
+        err.message === 'Удалять можно только свои карточки.'
+      ) {
+        res.status(UNAUTHORIZED).send({ message: err.message });
+      } */
+      return next(err);
     });
 };
 
-export const createCard = (req, res) => {
+export const createCard = (req, res, next) => {
   const { name, link } = req.body;
 
   Card.create({ name, link, owner: req.user._id })
-    .then((item) => res.status(CREATE_SUCCESS_STATUS).send(item))
+    .then((item) => res/* .status(CREATE_SUCCESS_STATUS) */.send(item))
     .catch((err) => {
       if (err instanceof mongoose.Error.ValidationError) {
-        return res.status(INCORRECT_DATA_ERROR).send({
-          message: 'Переданы некорректные данные при создании карточки.',
-        });
+        return next(
+          new BadReqestError(
+            'Переданы некорректные данные при создании карточки.',
+          ),
+        );
       }
-      return res.status(DEFAULT_ERROR).send({ message: DEFAULT_ERROR_MESSAGE });
+      return next(err);
     });
 };
 
-export const likeCard = (req, res) => {
+export const likeCard = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
     { $addToSet: { likes: req.user._id } }, // добавить _id в массив, если его там нет
     { new: true },
   )
     .orFail()
-    .then((like) => res.status(DEFAULT_SUCCESS_STATUS).send(like))
+    .then((like) => res/* .status(DEFAULT_SUCCESS_STATUS) */.send(like))
     .catch((err) => {
       if (err instanceof mongoose.Error.DocumentNotFoundError) {
-        return res
-          .status(NOT_FOUND_ERROR)
-          .send({ message: 'Передан несуществующий _id карточки.' });
+        return next(new NotFoundError('Карточка с указанным id не найдена.'));
       }
       if (err instanceof mongoose.Error.CastError) {
-        return res.status(INCORRECT_DATA_ERROR).send({
-          message: 'Переданы некорректные данные для постановки лайка.',
-        });
+        return next(new BadReqestError('Не валидные данные для поиска.'));
       }
-      return res.status(DEFAULT_ERROR).send({ message: DEFAULT_ERROR_MESSAGE });
+      return next(err);
     });
 };
 
-export const dislikeCard = (req, res) => {
+export const dislikeCard = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
     { $pull: { likes: req.user._id } }, // убрать _id из массива
     { new: true },
   )
     .orFail()
-    .then((dislike) => res.status(DEFAULT_SUCCESS_STATUS).send(dislike))
+    .then((dislike) => res/* .status(DEFAULT_SUCCESS_STATUS) */.send(dislike))
     .catch((err) => {
       if (err instanceof mongoose.Error.DocumentNotFoundError) {
-        return res
-          .status(NOT_FOUND_ERROR)
-          .send({ message: 'Передан несуществующий _id карточки.' });
+        return next(new NotFoundError('Карточка с указанным id не найдена.'));
       }
       if (err instanceof mongoose.Error.CastError) {
-        return res
-          .status(INCORRECT_DATA_ERROR)
-          .send({ message: 'Переданы некорректные данные для снятии лайка.' });
+        return next(new BadReqestError('Не валидные данные для поиска.'));
       }
-      return res.status(DEFAULT_ERROR).send({ message: DEFAULT_ERROR_MESSAGE });
+      return next(err);
     });
 };

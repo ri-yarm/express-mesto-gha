@@ -43,27 +43,33 @@ const userSchema = new mongoose.Schema(
     password: {
       type: String,
       required: [true, 'Поле обязательно к заполнению'],
-      select: false,
       minlength: [6, 'Минимальная длина пароля - 6'],
+      /* убрал отсюда select, но добавил методам запроса,
+      так как из select'a я не могу его валидировать(а я очень хочу валидировать по длине) */
+      // select: false,
     },
   },
   {
     versionKey: false,
     statics: {
       findUserByCredentials(email, password) {
-        return this.findOne({ email }).then((user) => {
-          if (!user) {
-            return Promise.reject(new Error('Неправильные почта или пароль'));
-          }
-
-          return bcrypt.compare(password, user.password).then((mathed) => {
-            if (!mathed) {
+        return this.findOne({ email })
+          // .select('+password')
+          .then((user) => {
+            if (!user) {
               return Promise.reject(new Error('Неправильные почта или пароль'));
             }
 
-            return user;
+            return bcrypt.compare(password, user.password).then((matched) => {
+              if (!matched) {
+                return Promise.reject(
+                  new Error('Неправильные почта или пароль'),
+                );
+              }
+
+              return user;
+            });
           });
-        });
       },
     },
   },
