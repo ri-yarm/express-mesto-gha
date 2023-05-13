@@ -21,8 +21,9 @@ const userSchema = new mongoose.Schema(
     avatar: {
       type: String,
       validate: {
+        // здесь валидация проходит через библиотеку validate, по паттерну проверка идёт при входе
         validator(v) {
-          return validator.isURL(v);
+          return validator.isURL(v, { protocols: ['http', 'https'], require_protocol: true, require_valid_protocol: true });
         },
         message: 'Некорректный URL аватара',
       },
@@ -43,10 +44,9 @@ const userSchema = new mongoose.Schema(
     password: {
       type: String,
       required: [true, 'Поле обязательно к заполнению'],
-      minlength: [6, 'Минимальная длина пароля - 6'],
-      /* убрал отсюда select, но добавил методам запроса,
-      так как из select'a я не могу его валидировать(а я очень хочу валидировать по длине) */
-      // select: false,
+      // minlength: [6, 'Минимальная длина пароля - 6'],
+      /* Прикольно, если стоит поле select, то валидировать его  по длине нельзя */
+      select: false,
     },
   },
   {
@@ -54,7 +54,7 @@ const userSchema = new mongoose.Schema(
     statics: {
       findUserByCredentials(email, password) {
         return this.findOne({ email })
-          // .select('+password')
+          .select('+password')
           .then((user) => {
             if (!user) {
               return Promise.reject(new Error('Неправильные почта или пароль'));

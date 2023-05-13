@@ -1,4 +1,5 @@
-import console from 'console'
+/* eslint-disable consistent-return */
+import console from 'console';
 
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
@@ -16,10 +17,8 @@ import DuplicateError from '../utils/instanceOfErrors/duplicateError.js';
 
 export const getUsers = (req, res, next) => {
   User.find({})
-    .then((users) =>
-      res /* .status(DEFAULT_SUCCESS_STATUS) */
-        .send(users),
-    )
+    .then((users) => res /* .status(DEFAULT_SUCCESS_STATUS) */
+      .send(users))
     .catch(next);
 };
 
@@ -28,10 +27,8 @@ export const getUserId = (req, res, next) => {
 
   User.findById(id)
     .orFail()
-    .then((user) =>
-      res /* .status(DEFAULT_SUCCESS_STATUS) */
-        .send(user),
-    )
+    .then((user) => res /* .status(DEFAULT_SUCCESS_STATUS) */
+      .send(user))
     .catch((err) => {
       if (err instanceof mongoose.Error.DocumentNotFoundError) {
         return next(new NotFoundError('Пользователь с указанным id не найден.'));
@@ -48,10 +45,8 @@ export const getUserMe = (req, res, next) => {
 
   User.findById(_id)
     .orFail()
-    .then((user) =>
-      res /* .status(DEFAULT_SUCCESS_STATUS) */
-        .send(user),
-    )
+    .then((user) => res /* .status(DEFAULT_SUCCESS_STATUS) */
+      .send(user))
     .catch((err) => {
       if (err instanceof mongoose.Error.DocumentNotFoundError) {
         return next(new NotFoundError('Пользователь с указанным id не найден.'));
@@ -64,12 +59,13 @@ export const getUserMe = (req, res, next) => {
 };
 
 export const createUser = (req, res, next) => {
-  const { name, about, avatar, email, password } = req.body;
+  const {
+    name, about, avatar, email, password,
+  } = req.body;
 
   if (!password) {
     return next(new BadReqestError('Необходимо указать пароль'));
   }
-
 
   bcrypt.hash(password, SALT).then((hash) => {
     User.create({
@@ -79,14 +75,20 @@ export const createUser = (req, res, next) => {
       email,
       password: hash,
     })
-      .then((user) =>
-        res /* .status(CREATE_SUCCESS_STATUS) */
-          .send({
-            email: user.email,
-            _id: user._id,
-          }),
-      )
+      .then((user) => res /* .status(CREATE_SUCCESS_STATUS) */
+        .send({
+          email: user.email,
+          _id: user._id,
+        }))
       .catch((err) => {
+        // Вот этот хардкод ошибки 11000 меня злит, не нашёл инстанс ошибки
+        if (err.code === 11000) {
+          return next(
+            new DuplicateError(
+              'Пользователь с таким email уже был зарегистрирован.',
+            ),
+          );
+        }
         if (err instanceof mongoose.Error.ValidationError) {
           return next(
             new BadReqestError(
@@ -96,14 +98,6 @@ export const createUser = (req, res, next) => {
         }
         if (err instanceof mongoose.Error.CastError) {
           return next(new BadReqestError('Не валидные данные.'));
-        }
-        // Вот этот хардкод ошибки 11000 меня злит, не нашёл инстанс ошибки
-        if (err.code === 11000) {
-          return next(
-            new DuplicateError(
-              'Пользователь с таким email уже был зарегистрирован.',
-            ),
-          );
         }
         return next(err);
       });
@@ -119,10 +113,8 @@ export const updateProfile = (req, res, next) => {
     { new: true, runValidators: true },
   )
     .orFail()
-    .then((user) =>
-      res /* .status(DEFAULT_SUCCESS_STATUS) */
-        .send(user),
-    )
+    .then((user) => res /* .status(DEFAULT_SUCCESS_STATUS) */
+      .send(user))
     .catch((err) => {
       if (err instanceof mongoose.Error.DocumentNotFoundError) {
         return next(new NotFoundError('Пользователь с указанным id не найден.'));
@@ -147,10 +139,8 @@ export const updateAvatar = (req, res, next) => {
     { new: true, runValidators: true },
   )
     .orFail()
-    .then((user) =>
-      res /* .status(DEFAULT_SUCCESS_STATUS) */
-        .send(user),
-    )
+    .then((user) => res /* .status(DEFAULT_SUCCESS_STATUS) */
+      .send(user))
     .catch((err) => {
       if (err instanceof mongoose.Error.DocumentNotFoundError) {
         return next(new NotFoundError('Пользователь с указанным id не найден.'));
@@ -171,6 +161,11 @@ export const updateAvatar = (req, res, next) => {
 
 export const login = (req, res, next) => {
   const { email, password } = req.body;
+  console.log(email, password);
+
+  if (!password) {
+    return next(new BadReqestError('Необходимо указать пароль'));
+  }
 
   User.findUserByCredentials(email, password)
     .then((user) => {
