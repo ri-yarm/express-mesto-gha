@@ -1,4 +1,5 @@
-import console from 'console'
+/* eslint-disable consistent-return */
+import console from 'console';
 
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
@@ -13,13 +14,12 @@ import {
 import BadReqestError from '../utils/instanceOfErrors/badRequestError.js';
 import NotFoundError from '../utils/instanceOfErrors/notFoundError.js';
 import DuplicateError from '../utils/instanceOfErrors/duplicateError.js';
+import UnAuthorizedError from '../utils/instanceOfErrors/unAuthorizedError.js';
 
 export const getUsers = (req, res, next) => {
   User.find({})
-    .then((users) =>
-      res /* .status(DEFAULT_SUCCESS_STATUS) */
-        .send(users),
-    )
+    .then((users) => res /* .status(DEFAULT_SUCCESS_STATUS) */
+      .send(users))
     .catch(next);
 };
 
@@ -28,10 +28,8 @@ export const getUserId = (req, res, next) => {
 
   User.findById(id)
     .orFail()
-    .then((user) =>
-      res /* .status(DEFAULT_SUCCESS_STATUS) */
-        .send(user),
-    )
+    .then((user) => res /* .status(DEFAULT_SUCCESS_STATUS) */
+      .send(user))
     .catch((err) => {
       if (err instanceof mongoose.Error.DocumentNotFoundError) {
         return next(new NotFoundError('Пользователь с указанным id не найден.'));
@@ -48,10 +46,8 @@ export const getUserMe = (req, res, next) => {
 
   User.findById(_id)
     .orFail()
-    .then((user) =>
-      res /* .status(DEFAULT_SUCCESS_STATUS) */
-        .send(user),
-    )
+    .then((user) => res /* .status(DEFAULT_SUCCESS_STATUS) */
+      .send(user))
     .catch((err) => {
       if (err instanceof mongoose.Error.DocumentNotFoundError) {
         return next(new NotFoundError('Пользователь с указанным id не найден.'));
@@ -64,11 +60,13 @@ export const getUserMe = (req, res, next) => {
 };
 
 export const createUser = (req, res, next) => {
-  const { name, about, avatar, email, password } = req.body;
+  const {
+    name, about, avatar, email, password,
+  } = req.body;
 
-  if (!password) {
+  /* if (!password) {
     return next(new BadReqestError('Необходимо указать пароль'));
-  }
+  } */
 
   bcrypt.hash(password, SALT).then((hash) => {
     User.create({
@@ -78,13 +76,11 @@ export const createUser = (req, res, next) => {
       email,
       password: hash,
     })
-      .then((user) =>
-        res /* .status(CREATE_SUCCESS_STATUS) */
-          .send({
-            email: user.email,
-            _id: user._id,
-          }),
-      )
+      .then((user) => res /* .status(CREATE_SUCCESS_STATUS) */
+        .send({
+          email: user.email,
+          _id: user._id,
+        }))
       .catch((err) => {
         // Вот этот хардкод ошибки 11000 меня злит, не нашёл инстанс ошибки
         if (err.code === 11000) {
@@ -118,10 +114,8 @@ export const updateProfile = (req, res, next) => {
     { new: true, runValidators: true },
   )
     .orFail()
-    .then((user) =>
-      res /* .status(DEFAULT_SUCCESS_STATUS) */
-        .send(user),
-    )
+    .then((user) => res /* .status(DEFAULT_SUCCESS_STATUS) */
+      .send(user))
     .catch((err) => {
       if (err instanceof mongoose.Error.DocumentNotFoundError) {
         return next(new NotFoundError('Пользователь с указанным id не найден.'));
@@ -146,10 +140,8 @@ export const updateAvatar = (req, res, next) => {
     { new: true, runValidators: true },
   )
     .orFail()
-    .then((user) =>
-      res /* .status(DEFAULT_SUCCESS_STATUS) */
-        .send(user),
-    )
+    .then((user) => res /* .status(DEFAULT_SUCCESS_STATUS) */
+      .send(user))
     .catch((err) => {
       if (err instanceof mongoose.Error.DocumentNotFoundError) {
         return next(new NotFoundError('Пользователь с указанным id не найден.'));
@@ -172,9 +164,9 @@ export const login = (req, res, next) => {
   const { email, password } = req.body;
   console.log(email, password);
 
-  if (!password) {
+  /* if (!password) {
     return next(new BadReqestError('Необходимо указать пароль'));
-  }
+  } */
 
   User.findUserByCredentials(email, password)
     .then((user) => {
@@ -182,19 +174,24 @@ export const login = (req, res, next) => {
         expiresIn: '7d',
       });
 
+      res.cookie('jwt', token, { maxAge: 3600000 });
+
       res /* .status(DEFAULT_SUCCESS_STATUS) */
-        .send(token);
+        .send({ token });
     })
     .catch((err) => {
+      if (err instanceof mongoose.Error.CastError) {
+        return next(new BadReqestError('Не валидные данные.'));
+      }
+      if (err instanceof mongoose.Error.DocumentNotFoundError) {
+        return next(new UnAuthorizedError('Требуется авторизация.'));
+      }
       if (err instanceof mongoose.Error.ValidationError) {
         return next(
           new BadReqestError(
             'Переданы некорректные данные при обновлении аватара пользователя.',
           ),
         );
-      }
-      if (err instanceof mongoose.Error.CastError) {
-        return next(new BadReqestError('Не валидные данные.'));
       }
       return next(err);
     });

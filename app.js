@@ -3,6 +3,7 @@ import express from 'express';
 /** импорт консоли для его корректной работы  */
 import console from 'console';
 import mongoose from 'mongoose';
+import cookieParser from 'cookie-parser';
 /** Используем библиотеку express-rate-limit для защиты от DDoS атак */
 import { rateLimit } from 'express-rate-limit';
 /** Используем библиотеку helmet для защиты от кибератак */
@@ -18,10 +19,12 @@ const { PORT = 3000, MONGODB_URI = 'mongodb://127.0.0.1:27017/mestodb' } = proce
 
 const app = express();
 
+app.use(cookieParser());
+
 /** Конфигурация лимитера  */
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 50, // запросов с одного IP в течении поля "windowsMs"
+  max: 100, // запросов с одного IP в течении поля "windowsMs"
   standardHeaders: true, // Возврщает заголовок с инофрмацией лимита
   legacyHeaders: false, // Отключает референсный заголовок ответа библиотеки
 });
