@@ -70,7 +70,6 @@ export const createUser = (req, res, next) => {
     return next(new BadReqestError('Необходимо указать пароль'));
   }
 
-
   bcrypt.hash(password, SALT).then((hash) => {
     User.create({
       name,
@@ -87,6 +86,14 @@ export const createUser = (req, res, next) => {
           }),
       )
       .catch((err) => {
+        // Вот этот хардкод ошибки 11000 меня злит, не нашёл инстанс ошибки
+        if (err.code === 11000) {
+          return next(
+            new DuplicateError(
+              'Пользователь с таким email уже был зарегистрирован.',
+            ),
+          );
+        }
         if (err instanceof mongoose.Error.ValidationError) {
           return next(
             new BadReqestError(
@@ -96,14 +103,6 @@ export const createUser = (req, res, next) => {
         }
         if (err instanceof mongoose.Error.CastError) {
           return next(new BadReqestError('Не валидные данные.'));
-        }
-        // Вот этот хардкод ошибки 11000 меня злит, не нашёл инстанс ошибки
-        if (err.code === 11000) {
-          return next(
-            new DuplicateError(
-              'Пользователь с таким email уже был зарегистрирован.',
-            ),
-          );
         }
         return next(err);
       });
@@ -171,6 +170,11 @@ export const updateAvatar = (req, res, next) => {
 
 export const login = (req, res, next) => {
   const { email, password } = req.body;
+  console.log(email, password);
+
+  if (!password) {
+    return next(new BadReqestError('Необходимо указать пароль'));
+  }
 
   User.findUserByCredentials(email, password)
     .then((user) => {

@@ -15,7 +15,7 @@ cardsRouter.use(auth);
 
 cardsRouter.get('/cards', getCards);
 cardsRouter.post('/cards', createCard);
-cardsRouter.delete('/cards/:id', deleteCardId);
+cardsRouter.delete('/cards/:cardId', deleteCardId);
 
 cardsRouter.put('/cards/:cardId/likes', likeCard);
 cardsRouter.delete('/cards/:cardId/likes', dislikeCard);
