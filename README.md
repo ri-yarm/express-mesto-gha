@@ -8,6 +8,8 @@
   * Express
     * Helmet
     * Express-rate-limit
+    * celebrate
+      * Joi
   * Mongoose
     * Schema
     * validator

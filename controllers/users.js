@@ -6,8 +6,6 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import User from '../models/user.js';
 import {
-  /*   CREATE_SUCCESS_STATUS,
-  DEFAULT_SUCCESS_STATUS, */
   SECRET_KEY,
   SALT,
 } from '../utils/constant.js';
@@ -18,8 +16,7 @@ import UnAuthorizedError from '../utils/instanceOfErrors/unAuthorizedError.js';
 
 export const getUsers = (req, res, next) => {
   User.find({})
-    .then((users) => res /* .status(DEFAULT_SUCCESS_STATUS) */
-      .send(users))
+    .then((users) => res.send(users))
     .catch(next);
 };
 
@@ -28,8 +25,7 @@ export const getUserId = (req, res, next) => {
 
   User.findById(id)
     .orFail()
-    .then((user) => res /* .status(DEFAULT_SUCCESS_STATUS) */
-      .send(user))
+    .then((user) => res.send(user))
     .catch((err) => {
       if (err instanceof mongoose.Error.DocumentNotFoundError) {
         return next(new NotFoundError('Пользователь с указанным id не найден.'));
@@ -46,8 +42,7 @@ export const getUserMe = (req, res, next) => {
 
   User.findById(_id)
     .orFail()
-    .then((user) => res /* .status(DEFAULT_SUCCESS_STATUS) */
-      .send(user))
+    .then((user) => res.send(user))
     .catch((err) => {
       if (err instanceof mongoose.Error.DocumentNotFoundError) {
         return next(new NotFoundError('Пользователь с указанным id не найден.'));
@@ -64,10 +59,6 @@ export const createUser = (req, res, next) => {
     name, about, avatar, email, password,
   } = req.body;
 
-  /* if (!password) {
-    return next(new BadReqestError('Необходимо указать пароль'));
-  } */
-
   bcrypt.hash(password, SALT).then((hash) => {
     User.create({
       name,
@@ -76,11 +67,12 @@ export const createUser = (req, res, next) => {
       email,
       password: hash,
     })
-      .then((user) => res /* .status(CREATE_SUCCESS_STATUS) */
-        .send({
-          email: user.email,
-          _id: user._id,
-        }))
+      .then((user) => res.send({
+        name: user.name,
+        about: user.about,
+        avatar: user.avatar,
+        email: user.email,
+      }))
       .catch((err) => {
         // Вот этот хардкод ошибки 11000 меня злит, не нашёл инстанс ошибки
         if (err.code === 11000) {
@@ -114,8 +106,7 @@ export const updateProfile = (req, res, next) => {
     { new: true, runValidators: true },
   )
     .orFail()
-    .then((user) => res /* .status(DEFAULT_SUCCESS_STATUS) */
-      .send(user))
+    .then((user) => res.send(user))
     .catch((err) => {
       if (err instanceof mongoose.Error.DocumentNotFoundError) {
         return next(new NotFoundError('Пользователь с указанным id не найден.'));
@@ -140,8 +131,7 @@ export const updateAvatar = (req, res, next) => {
     { new: true, runValidators: true },
   )
     .orFail()
-    .then((user) => res /* .status(DEFAULT_SUCCESS_STATUS) */
-      .send(user))
+    .then((user) => res.send(user))
     .catch((err) => {
       if (err instanceof mongoose.Error.DocumentNotFoundError) {
         return next(new NotFoundError('Пользователь с указанным id не найден.'));
@@ -164,20 +154,16 @@ export const login = (req, res, next) => {
   const { email, password } = req.body;
   console.log(email, password);
 
-  /* if (!password) {
-    return next(new BadReqestError('Необходимо указать пароль'));
-  } */
-
   User.findUserByCredentials(email, password)
     .then((user) => {
       const token = jwt.sign({ _id: user.id }, SECRET_KEY, {
         expiresIn: '7d',
       });
 
-      res.cookie('jwt', token, { maxAge: 3600000 });
+      /** Сохраняем тоkен в куки */
+      // res.cookie('jwt', token, { maxAge: 3600000, httpOnly: true });
 
-      res /* .status(DEFAULT_SUCCESS_STATUS) */
-        .send({ token });
+      return res.send({ token });
     })
     .catch((err) => {
       if (err instanceof mongoose.Error.CastError) {

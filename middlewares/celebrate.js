@@ -7,8 +7,8 @@ const linkRegex = /(https?:\/\/)(w{3}\.)?(\w+[-.~:\/?#[\]@!$&'()*+,;=]*#?){3,}/;
 
 export const signupJoi = celebrate({
   body: Joi.object().keys({
-    email: Joi.string().required().min(3).max(30),
-    password: Joi.string().required().min(6),
+    email: Joi.string().required().email(),
+    password: Joi.string().required().min(1),
     name: Joi.string().min(2).max(30),
     about: Joi.string().min(2).max(30),
     avatar: Joi.string().pattern(linkRegex),
@@ -17,8 +17,8 @@ export const signupJoi = celebrate({
 
 export const loginJoi = celebrate({
   body: Joi.object().keys({
-    email: Joi.string().required().min(3).max(30),
-    password: Joi.string().required().min(6),
+    email: Joi.string().required().email(),
+    password: Joi.string().required().min(1),
   }),
 });
 
@@ -37,7 +37,7 @@ export const updateAvatarJoi = celebrate({
 
 export const userIdJoi = celebrate({
   params: Joi.object().keys({
-    id: Joi.string().alphanum(),
+    id: Joi.string().hex(),
   }),
 });
 
@@ -50,8 +50,8 @@ export const createCardJoi = celebrate({
   }),
 });
 
-export const deleteCardJoi = celebrate({
+export const cardJoi = celebrate({
   params: Joi.object().keys({
-    cardId: Joi.string().alphanum(),
+    cardId: Joi.string().hex().max(24),
   }),
 });
