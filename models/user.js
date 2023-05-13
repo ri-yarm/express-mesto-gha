@@ -2,6 +2,7 @@
 import mongoose from 'mongoose';
 import validator from 'validator';
 import bcrypt from 'bcryptjs';
+import UnAuthorizedError from '../utils/instanceOfErrors/unAuthorizedError.js';
 
 /** Схема пользователя. в массиве, второе значение для ответа пользователю */
 const userSchema = new mongoose.Schema(
@@ -57,13 +58,13 @@ const userSchema = new mongoose.Schema(
           .select('+password')
           .then((user) => {
             if (!user) {
-              return Promise.reject(new Error('Неправильные почта или пароль'));
+              return Promise.reject(new UnAuthorizedError('Неправильные почта или пароль'));
             }
 
             return bcrypt.compare(password, user.password).then((matched) => {
               if (!matched) {
                 return Promise.reject(
-                  new Error('Неправильные почта или пароль'),
+                  new UnAuthorizedError('Неправильные почта или пароль'),
                 );
               }
 

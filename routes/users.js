@@ -1,29 +1,26 @@
 import express from 'express';
-import auth from '../middlewares/auth.js';
 
 import {
   getUsers,
   getUserId,
-  createUser,
   updateProfile,
   updateAvatar,
-  login,
   getUserMe,
 } from '../controllers/users.js';
+import {
+  userIdJoi,
+  updateAvatarJoi,
+  updateProfileJoi,
+} from '../middlewares/celebrate.js';
 // import user from '../models/user.js';
 
 const userRouter = express.Router();
 
-userRouter.post('/signup', createUser);
-userRouter.post('/signin', login);
-
-userRouter.use(auth);
-
 userRouter.get('/users', getUsers);
 userRouter.get('/users/me', getUserMe);
-userRouter.get('/users/:id', getUserId);
+userRouter.get('/users/:id', userIdJoi, getUserId);
 
-userRouter.patch('/users/me', updateProfile);
-userRouter.patch('/users/me/avatar', updateAvatar);
+userRouter.patch('/users/me', updateProfileJoi, updateProfile);
+userRouter.patch('/users/me/avatar', updateAvatarJoi, updateAvatar);
 
 export default userRouter;

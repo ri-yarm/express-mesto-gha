@@ -3,6 +3,7 @@ import express from 'express';
 /** импорт консоли для его корректной работы  */
 import console from 'console';
 import mongoose from 'mongoose';
+import cookieParser from 'cookie-parser';
 /** Используем библиотеку express-rate-limit для защиты от DDoS атак */
 import { rateLimit } from 'express-rate-limit';
 /** Используем библиотеку helmet для защиты от кибератак */
@@ -17,6 +18,8 @@ dotenv.config();
 const { PORT = 3000, MONGODB_URI = 'mongodb://127.0.0.1:27017/mestodb' } = process.env;
 
 const app = express();
+
+app.use(cookieParser());
 
 /** Конфигурация лимитера  */
 const limiter = rateLimit({

@@ -14,6 +14,7 @@ import {
 import BadReqestError from '../utils/instanceOfErrors/badRequestError.js';
 import NotFoundError from '../utils/instanceOfErrors/notFoundError.js';
 import DuplicateError from '../utils/instanceOfErrors/duplicateError.js';
+import UnAuthorizedError from '../utils/instanceOfErrors/unAuthorizedError.js';
 
 export const getUsers = (req, res, next) => {
   User.find({})
@@ -63,9 +64,9 @@ export const createUser = (req, res, next) => {
     name, about, avatar, email, password,
   } = req.body;
 
-  if (!password) {
+  /* if (!password) {
     return next(new BadReqestError('Необходимо указать пароль'));
-  }
+  } */
 
   bcrypt.hash(password, SALT).then((hash) => {
     User.create({
@@ -163,9 +164,9 @@ export const login = (req, res, next) => {
   const { email, password } = req.body;
   console.log(email, password);
 
-  if (!password) {
+  /* if (!password) {
     return next(new BadReqestError('Необходимо указать пароль'));
-  }
+  } */
 
   User.findUserByCredentials(email, password)
     .then((user) => {
@@ -173,19 +174,24 @@ export const login = (req, res, next) => {
         expiresIn: '7d',
       });
 
+      res.cookie('jwt', token, { maxAge: 3600000 });
+
       res /* .status(DEFAULT_SUCCESS_STATUS) */
-        .send(token);
+        .send({ token });
     })
     .catch((err) => {
+      if (err instanceof mongoose.Error.CastError) {
+        return next(new BadReqestError('Не валидные данные.'));
+      }
+      if (err instanceof mongoose.Error.DocumentNotFoundError) {
+        return next(new UnAuthorizedError('Требуется авторизация.'));
+      }
       if (err instanceof mongoose.Error.ValidationError) {
         return next(
           new BadReqestError(
             'Переданы некорректные данные при обновлении аватара пользователя.',
           ),
         );
-      }
-      if (err instanceof mongoose.Error.CastError) {
-        return next(new BadReqestError('Не валидные данные.'));
       }
       return next(err);
     });

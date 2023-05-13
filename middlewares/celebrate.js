@@ -1,6 +1,6 @@
-/* eslint-disable no-useless-escape */
 import { celebrate, Joi } from 'celebrate';
 
+// eslint-disable-next-line no-useless-escape
 const linkRegex = /(https?:\/\/)(w{3}\.)?(\w+[-.~:\/?#[\]@!$&'()*+,;=]*#?){3,}/;
 
 // users
@@ -35,7 +35,7 @@ export const updateAvatarJoi = celebrate({
   }),
 });
 
-export const getUserdIdJoi = celebrate({
+export const userIdJoi = celebrate({
   params: Joi.object().keys({
     id: Joi.string().alphanum(),
   }),
