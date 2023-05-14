@@ -16,11 +16,11 @@ import {
 
 const userRouter = express.Router();
 
-userRouter.get('/users', getUsers);
-userRouter.get('/users/me', getUserMe);
-userRouter.get('/users/:id', userIdJoi, getUserId);
+userRouter.get('/', getUsers);
+userRouter.get('/me', getUserMe);
+userRouter.get('/:id', userIdJoi, getUserId);
 
-userRouter.patch('/users/me', updateProfileJoi, updateProfile);
-userRouter.patch('/users/me/avatar', updateAvatarJoi, updateAvatar);
+userRouter.patch('/me', updateProfileJoi, updateProfile);
+userRouter.patch('/me/avatar', updateAvatarJoi, updateAvatar);
 
 export default userRouter;

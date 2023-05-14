@@ -14,8 +14,8 @@ router.post('/signin', loginJoi, login);
 
 router.use(auth);
 
-router.use(userRouter);
-router.use(cardsRouter);
+router.use('/users', userRouter);
+router.use('/cards', cardsRouter);
 
 /** Все эндпоинты которые не были обработны будут приходить сюда */
 router.use('/*', (req, res, next) => {
