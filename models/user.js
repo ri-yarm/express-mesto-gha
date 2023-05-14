@@ -110,7 +110,7 @@ const userSchema = new mongoose.Schema(
        * ! Внимание, используется для поиска пользователя как параметр,
        * ! и для обозначение себя как пользователя в запросе
        */
-      getUserId(id, res, next) {
+      getId(id, res, next) {
         return this.findById(id)
           .orFail()
           .then((user) => res.send(user))

@@ -18,14 +18,14 @@ export const getUsers = (req, res, next) => {
 export const getUserId = (req, res, next) => {
   const { id } = req.params;
 
-  User.getUserId(id, res, next);
+  User.getId(id, res, next);
 };
 
 /** Получение себя как пользователя */
 export const getUserMe = (req, res, next) => {
-  const { id } = req.user;
+  const { _id } = req.user;
 
-  User.getUserId(id, res, next);
+  User.getId(_id, res, next);
 };
 
 /** Регистрация новго пользователя */
