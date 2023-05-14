@@ -12,7 +12,7 @@ const router = express.Router();
 router.post('/signup', signupJoi, createUser);
 router.post('/signin', loginJoi, login);
 
-router.use(auth);
+router.use(auth); // эндпоинты после этого миддлвэйра заблочены до момента авторизации
 
 router.use('/users', userRouter);
 router.use('/cards', cardsRouter);
