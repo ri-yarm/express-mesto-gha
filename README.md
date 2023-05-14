@@ -3,6 +3,7 @@
 [Ссылка на репозиторий](https://github.com/ri-yarm/express-mesto-gha)
 
 # Стек
+  * Простая документация через JSDoc
   * NodeJs
     * midlewares
   * Express

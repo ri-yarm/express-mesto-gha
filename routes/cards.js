@@ -15,8 +15,8 @@ import {
 const cardsRouter = express.Router();
 
 cardsRouter.get('/', getCards);
-cardsRouter.post('/', createCardJoi, createCard);
 cardsRouter.delete('/:cardId', cardJoi, deleteCardId);
+cardsRouter.post('/', createCardJoi, createCard);
 
 cardsRouter.put('/:cardId/likes', cardJoi, likeCard);
 cardsRouter.delete('/:cardId/likes', cardJoi, dislikeCard);
