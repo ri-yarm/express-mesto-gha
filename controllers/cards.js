@@ -16,7 +16,7 @@ export const deleteCardId = (req, res, next) => {
   Card.findById(req.params.cardId)
     .orFail()
     .then((card) => {
-      if (toString(card.owner) !== toString(req.user._id)) {
+      if (card.owner.toString() !== req.user._id) {
         throw new ForbiddenError('Удалять можно только свои карточки.');
       }
       return card;
