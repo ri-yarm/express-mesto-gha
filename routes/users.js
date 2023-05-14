@@ -12,7 +12,6 @@ import {
   updateAvatarJoi,
   updateProfileJoi,
 } from '../middlewares/celebrate.js';
-// import user from '../models/user.js';
 
 const userRouter = express.Router();
 
