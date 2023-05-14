@@ -37,7 +37,7 @@ export const updateAvatarJoi = celebrate({
 
 export const userIdJoi = celebrate({
   params: Joi.object().keys({
-    id: Joi.string().hex(),
+    id: Joi.string().required().hex().length(24),
   }),
 });
 
@@ -52,6 +52,6 @@ export const createCardJoi = celebrate({
 
 export const cardJoi = celebrate({
   params: Joi.object().keys({
-    cardId: Joi.string().hex().max(24),
+    cardId: Joi.string().required().hex().length(24),
   }),
 });

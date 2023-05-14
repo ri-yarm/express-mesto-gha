@@ -14,11 +14,11 @@ import {
 
 const cardsRouter = express.Router();
 
-cardsRouter.get('/cards', getCards);
-cardsRouter.post('/cards', createCardJoi, createCard);
-cardsRouter.delete('/cards/:cardId', cardJoi, deleteCardId);
+cardsRouter.get('/', getCards);
+cardsRouter.post('/', createCardJoi, createCard);
+cardsRouter.delete('/:cardId', cardJoi, deleteCardId);
 
-cardsRouter.put('/cards/:cardId/likes', cardJoi, likeCard);
-cardsRouter.delete('/cards/:cardId/likes', cardJoi, dislikeCard);
+cardsRouter.put('/:cardId/likes', cardJoi, likeCard);
+cardsRouter.delete('/:cardId/likes', cardJoi, dislikeCard);
 
 export default cardsRouter;

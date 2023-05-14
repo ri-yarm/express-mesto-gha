@@ -12,7 +12,6 @@ import {
 import BadReqestError from '../utils/instanceOfErrors/badRequestError.js';
 import NotFoundError from '../utils/instanceOfErrors/notFoundError.js';
 import DuplicateError from '../utils/instanceOfErrors/duplicateError.js';
-import UnAuthorizedError from '../utils/instanceOfErrors/unAuthorizedError.js';
 
 export const getUsers = (req, res, next) => {
   User.find({})
@@ -29,9 +28,6 @@ export const getUserId = (req, res, next) => {
     .catch((err) => {
       if (err instanceof mongoose.Error.DocumentNotFoundError) {
         return next(new NotFoundError('Пользователь с указанным id не найден.'));
-      }
-      if (err instanceof mongoose.Error.CastError) {
-        return next(new BadReqestError('Не валидные данные для поиска.'));
       }
       return next(err);
     });
@@ -88,9 +84,6 @@ export const createUser = (req, res, next) => {
               'Переданы некорректные данные при создании карточки.',
             ),
           );
-        }
-        if (err instanceof mongoose.Error.CastError) {
-          return next(new BadReqestError('Не валидные данные.'));
         }
         return next(err);
       });
@@ -166,12 +159,9 @@ export const login = (req, res, next) => {
       return res.send({ token });
     })
     .catch((err) => {
-      if (err instanceof mongoose.Error.CastError) {
-        return next(new BadReqestError('Не валидные данные.'));
-      }
-      if (err instanceof mongoose.Error.DocumentNotFoundError) {
+      /* if (err instanceof mongoose.Error.DocumentNotFoundError) {
         return next(new UnAuthorizedError('Требуется авторизация.'));
-      }
+      } */
       if (err instanceof mongoose.Error.ValidationError) {
         return next(
           new BadReqestError(
