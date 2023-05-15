@@ -6,6 +6,7 @@ import User from '../models/user.js';
 import { SECRET_KEY, SALT } from '../utils/constant.js';
 import BadReqestError from '../utils/instanceOfErrors/badRequestError.js';
 import DuplicateError from '../utils/instanceOfErrors/duplicateError.js';
+import NotFoundError from '../utils/instanceOfErrors/notFoundError.js';
 
 /** Получение списка всех зарегистрированных пользователей */
 export const getUsers = (req, res, next) => {
@@ -18,14 +19,30 @@ export const getUsers = (req, res, next) => {
 export const getUserId = (req, res, next) => {
   const { id } = req.params;
 
-  User.getId(id, res, next);
+  User.getId(id, res).catch((err) => {
+    if (err instanceof mongoose.Error.DocumentNotFoundError) {
+      return next(new NotFoundError('Пользователь с указанным id не найден.'));
+    }
+    if (err instanceof mongoose.Error.CastError) {
+      return next(new BadReqestError('Не валидные данные для поиска.'));
+    }
+    return next(err);
+  });
 };
 
 /** Получение себя как пользователя */
 export const getUserMe = (req, res, next) => {
   const { _id } = req.user;
 
-  User.getId(_id, res, next);
+  User.getId(_id, res).catch((err) => {
+    if (err instanceof mongoose.Error.DocumentNotFoundError) {
+      return next(new NotFoundError('Пользователь с указанным id не найден.'));
+    }
+    if (err instanceof mongoose.Error.CastError) {
+      return next(new BadReqestError('Не валидные данные для поиска.'));
+    }
+    return next(err);
+  });
 };
 
 /** Регистрация новго пользователя */
@@ -100,12 +117,42 @@ export const login = (req, res, next) => {
 export const updateProfile = (req, res, next) => {
   const { name, about } = req.body;
 
-  User.changeUserProfile(req.user._id, { name, about }, res, next);
+  User.changeUserProfile(req.user._id, { name, about }, res).catch((err) => {
+    if (err instanceof mongoose.Error.DocumentNotFoundError) {
+      return next(new NotFoundError('Пользователь с указанным id не найден.'));
+    }
+    if (err instanceof mongoose.Error.CastError) {
+      return next(new BadReqestError('Не валидные данные для поиска.'));
+    }
+    if (err instanceof mongoose.Error.ValidationError) {
+      return next(
+        new BadReqestError(
+          'Переданы некорректные данные при обновлении профиля пользователя.',
+        ),
+      );
+    }
+    return next(err);
+  });
 };
 
 /** Обновление аватара пользователя */
 export const updateAvatar = (req, res, next) => {
   const { avatar } = req.body;
 
-  User.changeUserProfile(req.user._id, { avatar }, res, next);
+  User.changeUserProfile(req.user._id, { avatar }, res).catch((err) => {
+    if (err instanceof mongoose.Error.DocumentNotFoundError) {
+      return next(new NotFoundError('Пользователь с указанным id не найден.'));
+    }
+    if (err instanceof mongoose.Error.CastError) {
+      return next(new BadReqestError('Не валидные данные для поиска.'));
+    }
+    if (err instanceof mongoose.Error.ValidationError) {
+      return next(
+        new BadReqestError(
+          'Переданы некорректные данные при обновлении профиля пользователя.',
+        ),
+      );
+    }
+    return next(err);
+  });
 };
